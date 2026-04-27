@@ -40,7 +40,7 @@ spec:
         {{- end }}
     spec:
       {{- if or (.Values.gateway.priorityClassName) (.Values.global.priorityClassName) }}
-      priorityClassName: {{ default .Values.gateway.priorityClassName .Values.global.priorityClassName }}
+      priorityClassName: {{ tpl (default .Values.gateway.priorityClassName .Values.global.priorityClassName) . }}
       {{- end }}
       serviceAccountName: {{ include "tempo.serviceAccountName" . }}
       {{- with .Values.tempo.podSecurityContext }}
@@ -160,7 +160,7 @@ spec:
         {{- if .Values.gateway.nginxConfig.ssl }}
         - name: gateway-tls
           secret:
-            secretName: {{ .Values.gateway.nginxConfig.tlsSecretName }}
+            secretName: {{ tpl .Values.gateway.nginxConfig.tlsSecretName . }}
         {{- end }}
         {{- if .Values.gateway.extraVolumes }}
         {{- toYaml .Values.gateway.extraVolumes | nindent 8 }}
