@@ -161,6 +161,15 @@ defaults:
       authModes: ""
       # -- Secret key references for TriggerAuthentication
       secretTargetRef: []
+  statefulSetRecreateJob:
+    # -- Enable the PVC resize job for statefulsets. This job will be triggered when the storage size is increased and
+    # will recreate the statefulset to allow resizing of PVCs, which is not natively supported by Kubernetes.
+    patchPVC: true
+    image:
+      registry: registry.k8s.io
+      repository: kubectl
+      # -- Overrides the image tag. Defaults to .Capabilities.KubeVersion.Version
+      tag: ''
 
 ######################################################################################################################
 #
@@ -3508,6 +3517,10 @@ compactor:
   enabled: true
   # -- Kind of compactor deployment. StatefulSet and Deployment are supported.
   kind: StatefulSet
+  # -- EXPERIMENTAL: Enable creating a Job to recreate the compactor StatefulSet when the compactor configuration is changed.
+  ## Only applicable if `compactor.kind` is StatefulSet. Useful for PVC size changes, which require recreating the StatefulSet.
+  statefulSetRecreateJob:
+    enabled: false
   # -- Number of replicas for the compactor
   replicas: 0
   # -- UpdateStrategy or Strategy for the compactor.
@@ -3645,7 +3658,7 @@ compactor:
     # -- Parameters used for the `data` volume when volumeClaimEnabled if false
     dataVolumeParameters:
       emptyDir: {}
-    # -- List of the compactor PVCs
+    # -- List of the compactor PVCs. Deprecated in favor of `compactor.persistence.dataVolumeParameters` and `compactor.persistence.size`.
     # @notationType -- list
     claims:
       - name: data
@@ -3996,6 +4009,10 @@ bloomBuilder:
   enabled: false
   # -- Kind of compactor deployment. StatefulSet and Deployment are supported.
   kind: Deployment
+  # -- Enable creating a Job to recreate the compactor StatefulSet when the compactor configuration is changed.
+  ## Only applicable if `compactor.kind` is StatefulSet. Useful for PVC size changes, which require recreating the StatefulSet.
+  statefulSetRecreateJob:
+    enabled: false
   # -- Number of replicas for the bloom-builder
   replicas: 0
   # -- hostAliases to add
